@@ -1,0 +1,91 @@
+﻿@page "/"
+@using BlazorSampleApp.Data;
+@inject CoordinatesService CoordinatesModel
+@inject IJSRuntime _js
+@inject WeatherForecastService ForecastService
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+    Welcome to your new app.
+
+<SurveyPrompt Title="How is Blazor working for you?" />
+
+
+<EditForm Model="@CoordinatesModel">
+    <h3>Blazor Web Application</h3>
+    <hr />
+    <div class="form-group row" style="margin: 10px;">
+        <label for="latitude" class="col-sm-2 col-form-label">
+            Latitude
+        </label>
+        <div class="col-sm-10">
+            <InputText id="latitude" class="form-control" placeholder="Latitude"
+                       @bind-Value="Coordinates.Latitude" />
+        </div>
+    </div>
+    <div class="form-group row" style="margin: 10px;">
+        <label for="longitude" class="col-sm-2 col-form-label">
+            Longitude
+        </label>
+        <div class="col-sm-10">
+            <InputText id="longitude" class="form-control" placeholder="Longitude"
+                       @bind-Value="Coordinates.Longitude" />
+        </div>
+    </div>
+
+    <div class="form-group row" style="margin: 10px;">
+        <label class="col-sm-2 col-form-label" />
+        <div class="col-sm-10">
+            <button class="btn btn-primary" @onclick="onClickSendCoordinates">Send Co-ordinates to Mobile App</button>
+        </div>
+    </div>
+
+    <div class="form-group row" style="margin: 10px;">
+        <label class="col-sm-2 col-form-label" />
+        <div class="col-sm-10">
+            <button class="btn btn-primary" @onclick="onClickTakePhoto">Take Photo</button>
+        </div>
+    </div>
+    <div class="form-group row" style="margin: 10px;">
+        <label class="col-sm-2 col-form-label" />
+        <div class="col-sm-10">
+            <img src="@Coordinates.Photo" height="300" width="300">
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private Coordinates Coordinates = new();
+    private async void onClickSendCoordinates()
+    {
+        var item = Coordinates;
+
+        var data = System.Text.Json.JsonSerializer.Serialize(Coordinates);
+        // await _js.InvokeVoidAsync("invokeNativeAction", data);
+        await ForecastService.onClickSendLocation(_js, data);
+    }
+    private async void onClickTakePhoto()
+    {
+        await ForecastService.onClickTakePhoto(_js);
+        // await _js.InvokeVoidAsync("invokeNativeAction", "TakePhoto");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        Coordinates = await CoordinatesModel.GetLocationAsync();
+    }
+
+
+
+    [JSInvokable("nativeToWebViewSendCoordinates")]
+    public static async void nativeToWebViewSendCoordinates()
+    {
+
+    }
+}
+
+
+
+
+
